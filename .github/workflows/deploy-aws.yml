@@ -1,5 +1,4 @@
 name: Deploy Production
-
 on:
   push:
     branches:
@@ -25,11 +24,11 @@ jobs:
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Role,Values=WinterCMS" \
+            --targets "Key=tag:aws:autoscaling:groupName,Values=winterasg" \
             --comment "GitHub Production Deploy" \
             --parameters 'commands=[
               "cd /var/www/winter",
-              "git config --global --add safe.directory /var/www/winter",
+              "git config --global --add safe.directory /var/www/winter || true",
               "git fetch origin",
               "git reset --hard origin/prod",
               "sudo -u nginx composer install --no-dev --optimize-autoloader --no-interaction",
