@@ -1,4 +1,5 @@
 name: Deploy Production
+
 on:
   push:
     branches:
@@ -12,6 +13,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -26,8 +28,10 @@ jobs:
             --auto-scaling-group-names winterasg \
             --query 'AutoScalingGroups[0].Instances[?LifecycleState==`InService`].InstanceId' \
             --output text)
+
           echo "Instances: $INSTANCE_IDS"
-          aws ssm send-command \
+
+          COMMAND_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --instance-ids $INSTANCE_IDS \
             --comment "GitHub Production Deploy" \
@@ -43,4 +47,14 @@ jobs:
               "sudo -u nginx php artisan view:clear",
               "systemctl reload php-fpm",
               "systemctl reload nginx"
-            ]'
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "Command ID: $COMMAND_ID"
+
+          sleep 20
+
+          aws ssm list-command-invocations \
+            --command-id "$COMMAND_ID" \
+            --details
