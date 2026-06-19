@@ -41,7 +41,7 @@ jobs:
               "git config --system --add safe.directory /var/www/winter || true",
               "git fetch origin",
               "git reset --hard origin/prod",
-              "composer install --no-dev --optimize-autoloader --no-interaction",
+              "COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction",
               "php artisan cache:clear",
               "php artisan config:clear",
               "php artisan view:clear",
